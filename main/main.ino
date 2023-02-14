@@ -137,20 +137,20 @@ int getChannel(int motor_id){
 // call with readEnc(&enc1Val, &enc1Count, &enc1PrevVal)
 void readEnc(int encA_pin, int encB_pin, bool* encVal, int* encCount, bool* encPrev){
   *encVal = digitalRead(encA_pin); //update encoder value
-​
+
   //NEED TO SOMETHING HERE WITH ENC2B
   (void) encB_pin; //putting this here so compiler doesnt get mad
-​
+
   if(*encVal != *encPrev){
     *encCount = *encCount + 1;
   }
   else{
     //*encCount = *encCount -1;  UPDATED WUTH DIRECtion stuff
   }
-​
+
   *encPrev = *encVal;
 }
-​
+
 //call readEnc for all the encoders
 void readEnc_all(int enc1A_pin, int enc1B_pin, bool* enc1Val, int* enc1Count, bool* enc1Prev, int enc2A_pin, int enc2B_pin, bool* enc2Val, int* enc2Count, bool* enc2Prev)
 {
