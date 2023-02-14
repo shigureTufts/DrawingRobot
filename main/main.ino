@@ -25,14 +25,12 @@ int servoPWM = 34;
 const int freq = 30000;
 const int pwmChannel1 = 0;
 const int pwmChannel2 = 1;
-const int pwmChannel3 = 2;
 const int resolution = 8;
 
 //initialize state and target encoder position
 int currentState = 0;
 int targetEnc1 = 0;
 int targetEnc2 = 0;
-int targetEnc3 = 0;
 
 #include "time.h"
 
