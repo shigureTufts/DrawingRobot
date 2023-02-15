@@ -38,13 +38,10 @@ void setup()
  
 void loop() 
 {
-  
-  pwm0 = map(posDegrees, 0, 180, SERVOMIN, SERVOMAX);
-  pwm1 = map(posDegrees, 0, 180, SERVOMIN, SERVOMAX);
-  pwm2 = map(posDegrees, 0, 180, SERVOMIN, SERVOMAX);
-  pca9685.setPWM(SER0, 0, pwm0);
-  pca9685.setPWM(SER1, 0, pwm0);
-  pca9685.setPWM(SER2, 0, pwm0);
+  lift_pen();
+  delay(1000);
+  drop_pen();
+  delay(1000);
 
 
 }
@@ -52,11 +49,11 @@ void loop()
 void lift_pen()
 {
   pwm2 = map(0, 0, 180, SERVOMIN, SERVOMAX);
-  pca9685.setPWM(SER2, 0, pwm0);
+  pca9685.setPWM(SER2, 0, pwm2);
 }
 
 void drop_pen()
 {
   pwm2 = map(60, 0, 180, SERVOMIN, SERVOMAX);
-  pca9685.setPWM(SER2, 0, pwm0);
+  pca9685.setPWM(SER2, 0, pwm2);
 }
