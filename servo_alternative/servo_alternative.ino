@@ -10,7 +10,7 @@ Adafruit_PWMServoDriver pca9685 = Adafruit_PWMServoDriver(0x40);
 // Range from 0 to 4095
 // This determines the pulse width
  
-#define SERVOMIN 100  // Minimum value 
+#define SERVOMIN 110  // Minimum value 
 #define SERVOMAX 500  // Maximum value
  
 // Define servo motor connections (expand as required)
@@ -38,12 +38,20 @@ void setup()
  
 void loop() 
 {
-  lift_pen();
+  draw_straight();
   delay(1000);
-  drop_pen();
+  draw_infinity();
   delay(1000);
+  home();
+  delay(2000);
+}
 
-
+void home()
+{
+  pwm0 = map(0, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(0, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
 }
 
 void lift_pen()
@@ -56,4 +64,73 @@ void drop_pen()
 {
   pwm2 = map(60, 0, 180, SERVOMIN, SERVOMAX);
   pca9685.setPWM(SER2, 0, pwm2);
+}
+
+void draw_random()
+{
+  for(int angle = 0; angle < 60; angle++)
+  {
+    pwm0 = map(angle, 0, 180, SERVOMIN, SERVOMAX);
+    pca9685.setPWM(SER0, 0, pwm0);
+    pwm1 = map(60 - angle, 0, 180, SERVOMIN, SERVOMAX);
+    pca9685.setPWM(SER1, 0, pwm1);
+    delay(30);
+  }
+  for(int angle = 60; angle > 0; angle--)
+  {
+    pwm0 = map(angle, 0, 180, SERVOMIN, SERVOMAX);
+    pca9685.setPWM(SER0, 0, pwm0);
+    pwm1 = map(60 - angle, 0, 180, SERVOMIN, SERVOMAX);
+    pca9685.setPWM(SER1, 0, pwm1);
+    delay(30);
+  }
+}
+
+void draw_straight()
+{
+  pwm0 = map(0, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(0, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  pwm0 = map(10, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(10, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  pwm0 = map(20, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(20, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+}
+
+void draw_infinity()
+{
+
+  pwm0 = map(0, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(10, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  pwm0 = map(10, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(0, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  pwm0 = map(10, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(20, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  pwm0 = map(20, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(10, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
 }
