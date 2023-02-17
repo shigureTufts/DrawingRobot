@@ -38,17 +38,17 @@ void setup()
  
 void loop() 
 {
-  draw_straight();
-  delay(1000);
-  draw_infinity();
-  delay(1000);
-  home();
-  delay(2000);
+  Orangen_klauer();
+  delay(3000);
+
+  shigure();
+  delay(3000);
+
 }
 
 void home()
 {
-  pwm0 = map(0, 0, 180, SERVOMIN, SERVOMAX);
+  pwm0 = map(50, 0, 180, SERVOMIN, SERVOMAX);
   pwm1 = map(0, 0, 180, SERVOMIN, SERVOMAX);
   pca9685.setPWM(SER0, 0, pwm0);
   pca9685.setPWM(SER1, 0, pwm1);
@@ -133,4 +133,162 @@ void draw_infinity()
   pca9685.setPWM(SER0, 0, pwm0);
   pca9685.setPWM(SER1, 0, pwm1);
   delay(1000);
+}
+
+void Orangen_klauer()
+{
+  // move to T :)
+  lift_pen();
+  delay(1000);
+  pwm0 = map(40, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(5, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
+  drop_pen();
+  delay(1000);
+  
+  //top of T
+  pwm0 = map(35, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  delay(1000);
+  pwm0 = map(30, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  delay(1000);
+
+  //bottm of T
+  pwm0 = map(35, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  delay(1000);
+
+  pwm1 = map(10, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  pwm1 = map(15, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+  lift_pen();
+
+
+  // move to M and drop pen :)
+  pwm0 = map(25, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(15, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
+  drop_pen();
+  delay(1000);
+
+  pwm1 = map(10, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  pwm1 = map(5, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  pwm0 = map(20, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(10, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  pwm0 = map(15, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(5, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  pwm1 = map(10, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  pwm1 = map(15, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  lift_pen();
+  delay(1000);
+
+}
+
+void shigure()
+{
+  //move to J
+  pwm0 = map(35, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(20, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+  drop_pen();
+  delay(1000);
+
+  //draw top of J
+  pwm0 = map(30, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  delay(1000);
+  pwm0 = map(25, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  delay(1000);
+  lift_pen();
+  delay(1000);
+
+  //draw bottom of J
+  pwm0 = map(30, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  delay(1000);
+  drop_pen();
+  delay(1000);
+
+  pwm1 = map(25, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  pwm1 = map(30, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  pwm0 = map(35, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(30, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+  lift_pen();
+  delay(1000);
+
+  //move to C
+
+  pwm0 = map(10, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(20, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+  drop_pen();
+  delay(1000);
+
+  //draw C
+  pwm0 = map(15, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  delay(1000);
+
+  pwm0 = map(20, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pwm1 = map(25, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  pwm0 = map(15, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pwm1 = map(30, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  pwm0 = map(10, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  delay(1000);
+  lift_pen();
+  delay(1000);
+
+
+
+
 }
