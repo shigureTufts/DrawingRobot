@@ -38,16 +38,16 @@ void setup()
  
 void loop() 
 {
+  shigure();
+  delay(1000);
   orangen_klauer();
   delay(3000);
-
-  shigure();
-  delay(3000);
-
 }
 
 void home()
 {
+  lift_pen();
+  delay(1000);
   pwm0 = map(50, 0, 180, SERVOMIN, SERVOMAX);
   pwm1 = map(0, 0, 180, SERVOMIN, SERVOMAX);
   pca9685.setPWM(SER0, 0, pwm0);
@@ -69,10 +69,12 @@ void drop_pen()
 }
 
 // start point, end point for top servo and start point , end point for lower servo
-void draw_something(angle0_start, angle0_end, angle1_start, angle1_end)
+int draw_something(int angle0_start, int angle0_end, int angle1_start, int angle1_end)
 {
   drop_pen();
   delay(300);
+  int angle0;
+  int angle1;
 
   // if drawing vertical, only moves lower servo
   if(angle0_start == angle0_end)
@@ -80,7 +82,7 @@ void draw_something(angle0_start, angle0_end, angle1_start, angle1_end)
     //moving forward
     if(angle1_start < angle1_end)
     {
-      for(int angle1 = angle1_start; angle1 <= angle1_end; angle1++)
+      for(angle1 = angle1_start; angle1 <= angle1_end; angle1++)
       {
         pwm1 = map(angle1, 0, 180, SERVOMIN, SERVOMAX);
         pca9685.setPWM(SER1, 0, pwm1);
@@ -91,7 +93,7 @@ void draw_something(angle0_start, angle0_end, angle1_start, angle1_end)
     //moving backward
     else
     {
-      for(int angle1 = angle1_start; angle1 >= angle1_end; angle1--)
+      for(angle1 = angle1_start; angle1 >= angle1_end; angle1--)
       {
         pwm1 = map(angle1, 0, 180, SERVOMIN, SERVOMAX);
         pca9685.setPWM(SER1, 0, pwm1);
@@ -106,7 +108,7 @@ void draw_something(angle0_start, angle0_end, angle1_start, angle1_end)
     //moving down
     if(angle0_start < angle0_end)
     {
-      for(int angle0 = angle0_start; angle0 <= angle0_end; angle0++)
+      for(angle0 = angle0_start; angle0 <= angle0_end; angle0++)
       {
         pwm1 = map(angle1, 0, 180, SERVOMIN, SERVOMAX);
         pca9685.setPWM(SER1, 0, pwm1);
@@ -117,7 +119,7 @@ void draw_something(angle0_start, angle0_end, angle1_start, angle1_end)
     //moving up
     else
     {
-      for(int angle0 = angle0_start; angle0 >= angle0_end; angle0--)
+      for(angle0 = angle0_start; angle0 >= angle0_end; angle0--)
       {
         pwm0 = map(angle0, 0, 180, SERVOMIN, SERVOMAX);
         pca9685.setPWM(SER0, 0, pwm0);
@@ -134,7 +136,7 @@ void draw_something(angle0_start, angle0_end, angle1_start, angle1_end)
 
     if(angle0_start > angle0_end && angle1_start > angle1_end)
     {
-      for(int angle0 = angle0_start; angle0 <= angle0_end; angle0++)
+      for(angle0 = angle0_start; angle0 <= angle0_end; angle0++)
       {
         int angle1 = angle1_start;
         pwm0 = map(angle0, 0, 180, SERVOMIN, SERVOMAX);
@@ -148,9 +150,9 @@ void draw_something(angle0_start, angle0_end, angle1_start, angle1_end)
 
     else if(angle0_start < angle0_end && angle1_start > angle1_end)
     {
-      for(int angle0 = angle0_start; angle0 >= angle0_end; angle0--)
+      for(angle0 = angle0_start; angle0 >= angle0_end; angle0--)
       {
-        int angle1 = angle1_start;
+        angle1 = angle1_start;
         pwm0 = map(angle0, 0, 180, SERVOMIN, SERVOMAX);
         pwm1 = map(angle1, 0, 180, SERVOMIN, SERVOMAX);
         pca9685.setPWM(SER0, 0, pwm0);
@@ -162,9 +164,9 @@ void draw_something(angle0_start, angle0_end, angle1_start, angle1_end)
 
     else if(angle0_start > angle0_end && angle1_start < angle1_end)
     {
-      for(int angle0 = angle0_start; angle0 <= angle0_end; angle0++)
+      for(angle0 = angle0_start; angle0 <= angle0_end; angle0++)
       {
-        int angle1 = angle1_start;
+        angle1 = angle1_start;
         pwm0 = map(angle0, 0, 180, SERVOMIN, SERVOMAX);
         pwm1 = map(angle1, 0, 180, SERVOMIN, SERVOMAX);
         pca9685.setPWM(SER0, 0, pwm0);
@@ -175,9 +177,9 @@ void draw_something(angle0_start, angle0_end, angle1_start, angle1_end)
     }
     else
     {
-      for(int angle0 = angle0_start; angle0 >= angle0_end; angle0--)
+      for(angle0 = angle0_start; angle0 >= angle0_end; angle0--)
       {
-        int angle1 = angle1_start;
+        angle1 = angle1_start;
         pwm0 = map(angle0, 0, 180, SERVOMIN, SERVOMAX);
         pwm1 = map(angle1, 0, 180, SERVOMIN, SERVOMAX);
         pca9685.setPWM(SER0, 0, pwm0);
@@ -191,15 +193,15 @@ void draw_something(angle0_start, angle0_end, angle1_start, angle1_end)
 }
 
 // move to coordinate
-void go_to(angle0, angle1)
+int go_to(int angle0, int angle1)
 {
   lift_pen();
-  delay(300);
+  delay(1000);
   pwm0 = map(angle0, 0, 180, SERVOMIN, SERVOMAX);
   pwm1 = map(angle1, 0, 180, SERVOMIN, SERVOMAX);
   pca9685.setPWM(SER0, 0, pwm0);
   pca9685.setPWM(SER1, 0, pwm1);
-  delay(300);
+  delay(1000);
 }
 
 void orangen_klauer()
@@ -247,6 +249,29 @@ void shigure()
   draw_something(15, 20, 20 ,25);
   draw_something(20, 15, 25, 30);
   draw_something(15, 10, 30, 30);
+}
+
+void cr()
+{
+  //move to C
+  go_to(0, 5);
+
+  //draw C
+  draw_something(0, 5, 5, 5);
+  draw_something(5, 10, 5, 10);
+  draw_something(10, 5, 10, 15);
+  draw_something(5, 0, 15, 15);
+
+  //move to R
+  go_to(5, 30);
+
+  //draw R
+  draw_something(5, 5, 30, 20);
+  draw_something(5, 0, 20, 20);
+  draw_something(0, 0, 20, 25);
+  draw_something(0, 5, 25, 25);
+  draw_something(5, 0, 25, 30);
+
 
 
 }
