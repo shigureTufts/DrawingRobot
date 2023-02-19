@@ -41,6 +41,8 @@ void loop()
   shigure();
   delay(1000);
   orangen_klauer();
+  delay(1000);
+  cr();
   delay(3000);
 }
 
