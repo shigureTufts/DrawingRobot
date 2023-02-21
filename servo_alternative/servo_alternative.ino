@@ -1,15 +1,17 @@
+#include "AiEsp32RotaryEncoder.h"
+#include "Arduino.h"
 #include <Wire.h>
- 
-// Include Adafruit PCA9685 Servo Library
 #include <Adafruit_PWMServoDriver.h>
- 
+#include <ezButton.h>
+
+// Serco stuff
 // Creat object to represent PCA9685 at default I2C address
 Adafruit_PWMServoDriver pca9685 = Adafruit_PWMServoDriver(0x40);
  
 // Define maximum and minimum number of "ticks" for the servo motors
 // Range from 0 to 4095
 // This determines the pulse width
- 
+
 #define SERVOMIN 110  // Minimum value 
 #define SERVOMAX 500  // Maximum value
  
@@ -22,209 +24,181 @@ Adafruit_PWMServoDriver pca9685 = Adafruit_PWMServoDriver(0x40);
 int pwm0;
 int pwm1;
 int pwm2;
- 
-void setup() 
+
+// Encoder stuff
+#define ROTARY_ENCODER_A_PIN 17
+#define ROTARY_ENCODER_B_PIN 16
+#define ROTARY_ENCODER_BUTTON_PIN 4
+#define MODE_BUTTON_PIN 0
+#define ROTARY_ENCODER_VCC_PIN -1
+#define ROTARY_ENCODER_STEPS 4
+AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(ROTARY_ENCODER_A_PIN, ROTARY_ENCODER_B_PIN, ROTARY_ENCODER_BUTTON_PIN, ROTARY_ENCODER_VCC_PIN, ROTARY_ENCODER_STEPS);
+
+// Button stuff
+ezButton buttonE(MODE_BUTTON_PIN);
+
+int axis = 1;
+
+void rotary_loop()
 {
-  // Serial monitor setup
-  Serial.begin(115200);
- 
-  // Initialize PCA9685
-  pca9685.begin();
- 
-  // Set PWM Frequency to 50Hz
-  pca9685.setPWMFreq(50);
- 
-}
- 
-void loop() 
-{
-  shigure();
-  delay(1000);
-  orangen_klauer();
-  delay(1000);
-  cr();
-  delay(3000);
+  if (rotaryEncoder.encoderChanged())
+  {
+    Serial.print("Value: ");
+    Serial.println(rotaryEncoder.readEncoder());
+    if(axis % 2 == 1)
+    {
+      pwm0 = map(rotaryEncoder.readEncoder(), 0, 180, SERVOMIN, SERVOMAX);
+      pca9685.setPWM(SER0, 0, pwm0);
+    }
+    else
+    {
+      pwm1 = map(rotaryEncoder.readEncoder(), 0, 180, SERVOMIN, SERVOMAX);
+      pca9685.setPWM(SER1, 0, pwm1);
+    }
+  }
+
+  if (rotaryEncoder.isEncoderButtonClicked())
+  {
+    axis ++;
+    Serial.println("Switching servo...");
+  }
 }
 
-void home()
+void IRAM_ATTR readEncoderISR()
 {
-  lift_pen();
-  delay(1000);
-  pwm0 = map(50, 0, 180, SERVOMIN, SERVOMAX);
-  pwm1 = map(0, 0, 180, SERVOMIN, SERVOMAX);
-  pca9685.setPWM(SER0, 0, pwm0);
-  pca9685.setPWM(SER1, 0, pwm1);
+  rotaryEncoder.readEncoder_ISR();
+}
+
+void setup()
+{
+  Serial.begin(115200);
+
+  //encoder stuff
+  //we must initialize rotary encoder
+  rotaryEncoder.begin();
+  rotaryEncoder.setup(readEncoderISR);
+  //set boundaries and if values should cycle or not
+  //in this example we will set possible values between 0 and 1000;
+  bool circleValues = false;
+  rotaryEncoder.setBoundaries(0, 50, circleValues); //minValue, maxValue, circleValues true|false (when max go to min and vice versa)
+  rotaryEncoder.setAcceleration(250); //or set the value - larger number = more accelearation; 0 or 1 means disabled acceleration
+
+  // servo stuff
+  pca9685.begin();
+  // Set PWM Frequency to 50Hz
+  pca9685.setPWMFreq(50);
+
+  // button stuff
+  buttonE.setDebounceTime(50);
+}
+
+void loop()
+{
+  buttonE.loop();
+
+  if (buttonE.isPressed())
+  {
+    Serial.println("The mode button is pressed");
+    //auto draw
+    Orangen_klauer();
+    delay(3000);
+
+    shigure();
+    delay(3000);
+  }
+  else
+  {
+    rotary_loop();
+    delay(50);
+  }
 }
 
 void lift_pen()
 {
-  pwm2 = map(0, 0, 180, SERVOMIN, SERVOMAX);
+  pwm2 = map(160, 0, 180, SERVOMIN, SERVOMAX);
   pca9685.setPWM(SER2, 0, pwm2);
   delay(1000);
 }
 
 void drop_pen()
 {
-  pwm2 = map(60, 0, 180, SERVOMIN, SERVOMAX);
+  pwm2 = map(180, 0, 180, SERVOMIN, SERVOMAX);
   pca9685.setPWM(SER2, 0, pwm2);
   delay(1000);
 }
 
-// start point, end point for top servo and start point , end point for lower servo
-int draw_something(int angle0_start, int angle0_end, int angle1_start, int angle1_end)
+void Orangen_klauer()
 {
-  drop_pen();
-  delay(300);
-  int angle0;
-  int angle1;
-
-  // if drawing vertical, only moves lower servo
-  if(angle0_start == angle0_end)
-  {
-    //moving forward
-    if(angle1_start < angle1_end)
-    {
-      for(angle1 = angle1_start; angle1 <= angle1_end; angle1++)
-      {
-        pwm1 = map(angle1, 0, 180, SERVOMIN, SERVOMAX);
-        pca9685.setPWM(SER1, 0, pwm1);
-        delay(30);
-      }
-    }
-
-    //moving backward
-    else
-    {
-      for(angle1 = angle1_start; angle1 >= angle1_end; angle1--)
-      {
-        pwm1 = map(angle1, 0, 180, SERVOMIN, SERVOMAX);
-        pca9685.setPWM(SER1, 0, pwm1);
-        delay(30);
-      }
-    }
-  }
-
-  //if drawing horizontal, only moves top servo
-  else if(angle1_start == angle1_end)
-  {
-    //moving down
-    if(angle0_start < angle0_end)
-    {
-      for(angle0 = angle0_start; angle0 <= angle0_end; angle0++)
-      {
-        pwm1 = map(angle1, 0, 180, SERVOMIN, SERVOMAX);
-        pca9685.setPWM(SER1, 0, pwm1);
-        delay(30);
-      }
-    }
-
-    //moving up
-    else
-    {
-      for(angle0 = angle0_start; angle0 >= angle0_end; angle0--)
-      {
-        pwm0 = map(angle0, 0, 180, SERVOMIN, SERVOMAX);
-        pca9685.setPWM(SER0, 0, pwm0);
-        delay(30);
-      }
-    }
-  }
-
-  //drawing diagonal, need to determin ratio of moving
-  else
-  {
-    //setting moving ratio of the angle
-    int ratio = abs((angle1_start - angle1_end) / (angle0_start - angle0_end));
-
-    if(angle0_start > angle0_end && angle1_start > angle1_end)
-    {
-      for(angle0 = angle0_start; angle0 <= angle0_end; angle0++)
-      {
-        int angle1 = angle1_start;
-        pwm0 = map(angle0, 0, 180, SERVOMIN, SERVOMAX);
-        pwm1 = map(angle1, 0, 180, SERVOMIN, SERVOMAX);
-        pca9685.setPWM(SER0, 0, pwm0);
-        pca9685.setPWM(SER1, 0, pwm1);
-        angle1 += ratio;
-        delay(30);
-      }
-    }
-
-    else if(angle0_start < angle0_end && angle1_start > angle1_end)
-    {
-      for(angle0 = angle0_start; angle0 >= angle0_end; angle0--)
-      {
-        angle1 = angle1_start;
-        pwm0 = map(angle0, 0, 180, SERVOMIN, SERVOMAX);
-        pwm1 = map(angle1, 0, 180, SERVOMIN, SERVOMAX);
-        pca9685.setPWM(SER0, 0, pwm0);
-        pca9685.setPWM(SER1, 0, pwm1);
-        angle1 += ratio;
-        delay(30);
-      }
-    }
-
-    else if(angle0_start > angle0_end && angle1_start < angle1_end)
-    {
-      for(angle0 = angle0_start; angle0 <= angle0_end; angle0++)
-      {
-        angle1 = angle1_start;
-        pwm0 = map(angle0, 0, 180, SERVOMIN, SERVOMAX);
-        pwm1 = map(angle1, 0, 180, SERVOMIN, SERVOMAX);
-        pca9685.setPWM(SER0, 0, pwm0);
-        pca9685.setPWM(SER1, 0, pwm1);
-        angle1 -= ratio;
-        delay(30);
-      }
-    }
-    else
-    {
-      for(angle0 = angle0_start; angle0 >= angle0_end; angle0--)
-      {
-        angle1 = angle1_start;
-        pwm0 = map(angle0, 0, 180, SERVOMIN, SERVOMAX);
-        pwm1 = map(angle1, 0, 180, SERVOMIN, SERVOMAX);
-        pca9685.setPWM(SER0, 0, pwm0);
-        pca9685.setPWM(SER1, 0, pwm1);
-        angle1 -= ratio;
-        delay(30);
-      }
-    }
-  }
-
-}
-
-// move to coordinate
-int go_to(int angle0, int angle1)
-{
+  // move to T :)
   lift_pen();
   delay(1000);
-  pwm0 = map(angle0, 0, 180, SERVOMIN, SERVOMAX);
-  pwm1 = map(angle1, 0, 180, SERVOMIN, SERVOMAX);
+  pwm0 = map(40, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(5, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
+  drop_pen();
+  delay(1000);
+
+  //top of T
+  pwm0 = map(35, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  delay(1000);
+  pwm0 = map(30, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  delay(1000);
+
+  //bottm of T
+  pwm0 = map(35, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  delay(1000);
+
+  pwm1 = map(10, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  pwm1 = map(15, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+  lift_pen();
+
+
+  // move to M and drop pen :)
+  pwm0 = map(25, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(15, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
+  drop_pen();
+  delay(1000);
+
+  pwm1 = map(10, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  pwm1 = map(5, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  pwm0 = map(20, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(10, 0, 180, SERVOMIN, SERVOMAX);
   pca9685.setPWM(SER0, 0, pwm0);
   pca9685.setPWM(SER1, 0, pwm1);
   delay(1000);
-}
 
-void orangen_klauer()
-{
-  // move to T :)
-  go_to(40, 5);
-  
-  //top of T
-  draw_something(40, 30, 5, 5);
+  pwm0 = map(15, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(5, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
 
-  //bottm of T
-  go_to(35, 5);
-  draw_something(35, 35, 5, 15);
+  pwm1 = map(10, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
 
-  // move to M :)
-  go_to(25, 5);
+  pwm1 = map(15, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
 
-  draw_something(25, 25, 5, 15);
-  draw_something(20, 15, 10, 5);
-  draw_something(15, 15, 5, 15);
-
+  lift_pen();
   delay(1000);
 
 }
@@ -232,48 +206,78 @@ void orangen_klauer()
 void shigure()
 {
   //move to J
-  go_to(35, 20);
+  pwm0 = map(35, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(20, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+  drop_pen();
+  delay(1000);
 
   //draw top of J
-  draw_something(35, 25, 20, 20);
-
+  pwm0 = map(30, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  delay(1000);
+  pwm0 = map(25, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  delay(1000);
+  lift_pen();
+  delay(1000);
 
   //draw bottom of J
-  go_to(30, 20);
-  draw_something(30, 30, 20, 30);
-  draw_something(30, 35, 30, 30);
+  pwm0 = map(30, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  delay(1000);
+  drop_pen();
+  delay(1000);
+
+  pwm1 = map(25, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  pwm1 = map(30, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+
+  pwm0 = map(35, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(30, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+  lift_pen();
+  delay(1000);
 
   //move to C
-  go_to(10, 20);
+
+  pwm0 = map(10, 0, 180, SERVOMIN, SERVOMAX);
+  pwm1 = map(20, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
+  drop_pen();
+  delay(1000);
 
   //draw C
-  draw_something(10, 15, 20, 20);
-  draw_something(15, 20, 20 ,25);
-  draw_something(20, 15, 25, 30);
-  draw_something(15, 10, 30, 30);
-}
+  pwm0 = map(15, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  delay(1000);
 
-void cr()
-{
-  //move to C
-  go_to(0, 5);
+  pwm0 = map(20, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pwm1 = map(25, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
 
-  //draw C
-  draw_something(0, 5, 5, 5);
-  draw_something(5, 10, 5, 10);
-  draw_something(10, 5, 10, 15);
-  draw_something(5, 0, 15, 15);
+  pwm0 = map(15, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  pwm1 = map(30, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER1, 0, pwm1);
+  delay(1000);
 
-  //move to R
-  go_to(5, 30);
-
-  //draw R
-  draw_something(5, 5, 30, 20);
-  draw_something(5, 0, 20, 20);
-  draw_something(0, 0, 20, 25);
-  draw_something(0, 5, 25, 25);
-  draw_something(5, 0, 25, 30);
-
-
+  pwm0 = map(10, 0, 180, SERVOMIN, SERVOMAX);
+  pca9685.setPWM(SER0, 0, pwm0);
+  delay(1000);
+  lift_pen();
+  delay(1000);
 
 }
